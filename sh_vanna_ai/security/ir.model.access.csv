@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_vanna_config_user,vanna.config.user,model_vanna_config,base.group_user,1,1,1,1
+access_vanna_chatbot_user,vanna.chatbot.user,model_vanna_chatbot,base.group_user,1,0,0,0

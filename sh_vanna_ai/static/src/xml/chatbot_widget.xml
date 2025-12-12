@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="vanna_ai.ChatbotWidget">
+        <!-- Floating Chat Button -->
+        <div class="vanna-chatbot-container">
+            <button class="vanna-chat-button" t-on-click="toggleChat" title="Vanna AI Assistant">
+                <i class="fa fa-robot"></i>
+            </button>
+
+            <!-- Chat Window -->
+            <div class="vanna-chat-window" t-att-class="{'open': state.isOpen, 'minimized': state.isMinimized}">
+                <!-- Header -->
+                <div class="vanna-chat-header">
+                    <div class="vanna-chat-title">
+                        <i class="fa fa-robot"></i>
+                        <span>Vanna AI Assistant</span>
+                    </div>
+                    <div class="vanna-chat-actions">
+                        <button class="btn-icon" t-on-click="minimizeChat" title="Minimize">
+                            <i t-if="!state.isMinimized" class="fa fa-minus"></i>
+                            <i t-else="" class="fa fa-window-maximize"></i>
+                        </button>
+                        <button class="btn-icon" t-on-click="closeChat" title="Close">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Context Bar -->
+                <div class="vanna-context-bar" t-if="state.currentContext">
+                    <small>
+                        <i class="fa fa-info-circle"></i>
+                        <t t-esc="getContextSummary()"/>
+                    </small>
+                </div>
+
+                <!-- Messages Container -->
+                <div class="vanna-chat-messages" t-ref="chatContainer" t-if="!state.isMinimized">
+                    <!-- Welcome Message -->
+                    <div class="vanna-message system" t-if="state.messages.length === 0">
+                        <div class="message-content">
+                            <p><strong>Welcome to Vanna AI Assistant!</strong></p>
+                            <p>I can help you with:</p>
+                            <ul>
+                                <li>Answering questions about your current Odoo model</li>
+                                <li>Generating database queries</li>
+                                <li>Explaining fields and relationships</li>
+                                <li>Providing statistics and reports</li>
+                            </ul>
+                            <p>Try asking: "How many records are in this table?" or "Show me the fields in this model"</p>
+                        </div>
+                    </div>
+
+                    <!-- Messages -->
+                    <t t-foreach="state.messages" t-as="message" t-key="message_index">
+                        <div t-att-class="'vanna-message ' + message.type">
+                            <div class="message-header">
+                                <i t-if="message.type === 'user'" class="fa fa-user"></i>
+                                <i t-elif="message.type === 'assistant'" class="fa fa-robot"></i>
+                                <i t-elif="message.type === 'sql'" class="fa fa-database"></i>
+                                <i t-elif="message.type === 'results'" class="fa fa-table"></i>
+                                <i t-elif="message.type === 'error'" class="fa fa-exclamation-triangle"></i>
+                                <i t-elif="message.type === 'system'" class="fa fa-info-circle"></i>
+                                <span class="message-time" t-esc="message.timestamp"/>
+                            </div>
+                            <div class="message-content">
+                                <t t-if="message.type === 'sql'">
+                                    <pre><code t-esc="message.content"/></pre>
+                                </t>
+                                <t t-elif="message.type === 'results'">
+                                    <pre class="results-content" t-esc="message.content"/>
+                                </t>
+                                <t t-else="">
+                                    <p style="white-space: pre-wrap;" t-esc="message.content"/>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Loading Indicator -->
+                    <div class="vanna-message assistant" t-if="state.isLoading">
+                        <div class="message-content">
+                            <div class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="vanna-chat-input" t-if="!state.isMinimized">
+                    <button class="btn-clear" t-on-click="clearChat" title="Clear chat">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                    <textarea
+                            t-ref="messageInput"
+                            t-model="state.inputText"
+                            t-on-keypress="onKeyPress"
+                            placeholder="Ask me anything about this Odoo model..."
+                            rows="2"
+                            t-att-disabled="state.isLoading"
+                    />
+                    <button
+                            class="btn-send"
+                            t-on-click="sendMessage"
+                            t-att-disabled="state.isLoading or !state.inputText.trim()"
+                            title="Send message">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
